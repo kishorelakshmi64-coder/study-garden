@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Garden</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;800&family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f3f7ec;--card:#ffffff;--ink:#1d2b22;--muted:#5f7066;--leaf:#2f7d4f;--sun:#f4b942;--soil:#7a5230;--line:#d6e2cf}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1a14;--card:#16251c;--ink:#eaf3e4;--muted:#9bb1a1;--leaf:#5fc283;--soil:#a9794a;--line:#27402f}}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Nunito',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;padding:0 0 60px}
+h1,h2{font-family:'Fraunces',Georgia,serif}
+.wrap{max-width:900px;margin:auto;padding:0 5vw}
+header{padding:28px 0 8px}
+h1{font-size:clamp(2rem,7vw,3.2rem);line-height:1.1}
+header p{color:var(--muted);margin-top:6px}
+.top{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));margin-top:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px}
+h2{font-size:1.25rem;margin-bottom:12px}
+label{font-size:.85rem;color:var(--muted)}
+input,select{font:inherit;width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:transparent;color:var(--ink);margin:4px 0 10px}
+input:focus,select:focus,button:focus-visible{outline:3px solid var(--sun)}
+button{font:inherit;font-weight:700;cursor:pointer;border:0;border-radius:10px;padding:10px 16px;background:var(--leaf);color:#fff}
+button.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.count{font-family:'Fraunces',serif;font-size:3.4rem;font-weight:800;line-height:1}
+.count small{font-size:1rem;font-weight:500;color:var(--muted);font-family:'Nunito',sans-serif}
+.timer{font-family:'Fraunces',serif;font-size:3rem;font-weight:800;text-align:center;margin:6px 0 12px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.garden{margin-top:16px;background:linear-gradient(var(--card) 70%,var(--soil) 70%);border-radius:16px;border:1px solid var(--line);padding:18px 18px 0;min-height:190px;display:flex;align-items:flex-end;flex-wrap:wrap;gap:4px;overflow:hidden}
+.plant{font-size:2.2rem;animation:pop .6s ease-out both;margin-bottom:6px}
+@keyframes pop{from{transform:scale(0) translateY(20px)}to{transform:scale(1)}}
+@media (prefers-reduced-motion:reduce){.plant{animation:none}}
+.empty{color:var(--muted);align-self:center;margin:auto;text-align:center;padding-bottom:30px}
+.bar{height:10px;background:var(--line);border-radius:99px;overflow:hidden;margin:6px 0 4px}
+.bar i{display:block;height:100%;width:0;background:var(--leaf);transition:width .4s}
+ul{list-style:none;padding:0}
+li.task{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+li.task:last-child{border:0}
+li.task input[type=checkbox]{width:22px;height:22px;margin:0;accent-color:var(--leaf)}
+li.task .t{flex:1}
+li.task .t b{display:block}
+li.task .t span{color:var(--muted);font-size:.85rem}
+li.done .t b{text-decoration:line-through;color:var(--muted)}
+.x{background:transparent;color:var(--muted);padding:4px 8px}
+.msg{margin-top:10px;font-weight:700;color:var(--leaf)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Study Garden</h1>
+  <p>Oru task mudichaa, oru chedi valarum. Padi, un thottam azhaga maaradhai paaru.</p>
+</header>
+
+<div class="top">
+  <div class="card">
+    <h2>Exam countdown</h2>
+    <div class="count" id="days">--<small> days left</small></div>
+    <p id="examName" style="color:var(--muted);margin:4px 0 12px">Exam date set pannunga</p>
+    <label for="eName">Exam name</label>
+    <input id="eName" placeholder="Eg: Maths Final">
+    <label for="eDate">Date</label>
+    <input id="eDate" type="date">
+    <button id="saveExam">Save exam</button>
+  </div>
+
+  <div class="card">
+    <h2>Focus timer</h2>
+    <div class="timer" id="clock">25:00</div>
+    <div class="row">
+      <button id="start">Start</button>
+      <button class="ghost" id="reset">Reset</button>
+      <select id="mins" aria-label="Minutes" style="width:auto;margin:0">
+        <option value="15">15 min</option><option value="25" selected>25 min</option><option value="45">45 min</option>
+      </select>
+    </div>
+    <p class="msg" id="tmsg" role="status"></p>
+  </div>
+</div>
+
+<div class="garden" id="garden" aria-label="Your garden"></div>
+
+<div class="top">
+  <div class="card">
+    <h2>Add a task</h2>
+    <label for="subj">Subject</label>
+    <input id="subj" placeholder="Eg: Physics">
+    <label for="title">What will you study?</label>
+    <input id="title" placeholder="Eg: Chapter 3 problems">
+    <label for="tmin">Minutes</label>
+    <input id="tmin" type="number" min="5" value="30">
+    <button id="add">Add task</button>
+  </div>
+
+  <div class="card">
+    <h2>Today's progress</h2>
+    <div id="pText">0 of 0 done</div>
+    <div class="bar"><i id="pBar"></i></div>
+    <p class="msg" id="pMsg"></p>
+    <ul id="list" style="margin-top:10px"></ul>
+  </div>
+</div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let state = { exam: null, tasks: [] };
+try { const s = localStorage.getItem('studyGarden'); if (s) state = JSON.parse(s); } catch (e) {}
+const save = () => { try { localStorage.setItem('studyGarden', JSON.stringify(state)); } catch (e) {} };
+
+const plants = ['🌱','🌿','🌷','🌻','🌼','🌳','🍀','🌺'];
+const cheers = ['Aarambam nalla irukku! 🌱','Super, thodarnthu po!','Un thottam valarudhu 🌿','Semma focus! Konjam thaan baaki.','Ellam mudinjadhu! Nee thaan champion 🏆'];
+
+function render() {
+  // exam
+  if (state.exam) {
+    const d = Math.ceil((new Date(state.exam.date) - new Date().setHours(0,0,0,0)) / 864e5);
+    $('days').innerHTML = (d < 0 ? 0 : d) + '<small> days left</small>';
+    $('examName').textContent = state.exam.name || 'Exam';
+  }
+  // tasks
+  const list = $('list'); list.innerHTML = '';
+  state.tasks.forEach(t => {
+    const li = document.createElement('li');
+    li.className = 'task' + (t.done ? ' done' : '');
+    li.innerHTML = '<input type="checkbox" ' + (t.done ? 'checked' : '') + ' aria-label="Done"><div class="t"><b></b><span></span></div><button class="x" aria-label="Delete">✕</button>';
+    li.querySelector('b').textContent = t.title;
+    li.querySelector('span').textContent = t.subject + ' · ' + t.mins + ' min';
+    li.querySelector('input').onchange = () => { t.done = !t.done; save(); render(); };
+    li.querySelector('.x').onclick = () => { state.tasks = state.tasks.filter(x => x !== t); save(); render(); };
+    list.appendChild(li);
+  });
+  const total = state.tasks.length, done = state.tasks.filter(t => t.done).length;
+  $('pText').textContent = done + ' of ' + total + ' done';
+  const pct = total ? done / total : 0;
+  $('pBar').style.width = pct * 100 + '%';
+  $('pMsg').textContent = total ? cheers[Math.min(4, Math.floor(pct * 4.99))] : 'Oru task add panni aarambi.';
+  // garden
+  const g = $('garden'); g.innerHTML = '';
+  if (!done) { g.innerHTML = '<div class="empty">Un thottam kaaliya irukku.<br>Oru task mudi, first chedi valarum 🌱</div>'; }
+  state.tasks.filter(t => t.done).forEach((t, i) => {
+    const p = document.createElement('span');
+    p.className = 'plant'; p.textContent = plants[i % plants.length];
+    p.title = t.subject + ': ' + t.title;
+    p.style.animationDelay = (i * 0.05) + 's';
+    g.appendChild(p);
+  });
+}
+
+$('saveExam').onclick = () => {
+  if (!$('eDate').value) return;
+  state.exam = { name: $('eName').value.trim(), date: $('eDate').value };
+  save(); render();
+};
+$('add').onclick = () => {
+  const title = $('title').value.trim();
+  if (!title) return;
+  state.tasks.push({ subject: $('subj').value.trim() || 'General', title, mins: +$('tmin').value || 30, done: false });
+  $('title').value = ''; save(); render();
+};
+
+// timer
+let left = 1500, tick = null;
+const show = () => { $('clock').textContent = String(Math.floor(left / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0'); };
+$('mins').onchange = () => { if (!tick) { left = +$('mins').value * 60; show(); } };
+$('start').onclick = () => {
+  if (tick) { clearInterval(tick); tick = null; $('start').textContent = 'Start'; return; }
+  $('start').textContent = 'Pause'; $('tmsg').textContent = '';
+  tick = setInterval(() => {
+    left--; show();
+    if (left <= 0) { clearInterval(tick); tick = null; $('start').textContent = 'Start'; $('tmsg').textContent = 'Time mudinjadhu! Konjam break edu 🎉'; left = +$('mins').value * 60; show(); }
+  }, 1000);
+};
+$('reset').onclick = () => { clearInterval(tick); tick = null; $('start').textContent = 'Start'; left = +$('mins').value * 60; show(); $('tmsg').textContent = ''; };
+
+render();
+</script>
+</body>
+</html>
